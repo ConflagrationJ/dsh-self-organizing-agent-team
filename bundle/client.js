@@ -1,6 +1,7 @@
 /**
  * Browser half of the bundle: a read-only Settings page that shows what the
- * bundle registered and which DSH/core versions it was verified against.
+ * bundle registered, whether auto-load is on by default, and which DSH/core
+ * versions it was verified against.
  *
  * Values in COMPAT are validated against ../../compat.json by the repository
  * build script; edit compat.json, then run `python scripts/build.py`.
@@ -12,7 +13,7 @@ window.__ModuleLoader__.load({
     const React = require('react')
     const h = React.createElement
 
-    const COMPAT = JSON.parse('{"adapter":"dsh-agent-team-v1","coreRepo":"ConflagrationJ/self-organizing-agent-team","coreRef":"v0.1.0","bundleVersion":"0.1.0","dshVersionChecked":"44.7.0","skillName":"self-organizing-agent-team"}')
+    const COMPAT = JSON.parse('{"adapter":"dsh-agent-team-v1","coreRepo":"ConflagrationJ/self-organizing-agent-team","coreRef":"v0.1.0","bundleVersion":"0.2.0","dshVersionChecked":"44.7.0","skillName":"self-organizing-agent-team"}')
 
     const NS = 'self-organizing-agent-team'
 
@@ -25,9 +26,11 @@ window.__ModuleLoader__.load({
       fieldCore: 'Core ref',
       fieldBundle: 'Bundle version',
       fieldDsh: 'Verified against',
-      usage: 'Invoke with /self-organizing-agent-team in the composer, or let the model load the skill when a task matches its description. The protocol documents itself in the skill body and in adapters/deepseek-harness/TEAM-PROTOCOL.md.',
+      fieldAutoLoad: 'Default auto-load',
+      autoLoadOn: 'On — new sessions receive the protocol automatically. Turn it off in Settings → Plugins → this bundle → Auto-load.',
       compatHeading: 'Compatibility',
       usageHeading: 'How to use',
+      usage: 'New sessions already carry the protocol. You can also invoke /self-organizing-agent-team in the composer to load a fresh copy, and disable the default in the plugin configuration.',
     }
 
     const zh = {
@@ -39,9 +42,11 @@ window.__ModuleLoader__.load({
       fieldCore: '核心版本',
       fieldBundle: 'Bundle 版本',
       fieldDsh: '已验证版本',
-      usage: '在输入框输入 /self-organizing-agent-team 调用，或让模型在任务匹配描述时自行加载。协议正文在技能内，详细操作见 adapters/deepseek-harness/TEAM-PROTOCOL.md。',
+      fieldAutoLoad: '默认加载',
+      autoLoadOn: '开 —— 新会话会自动收到协议。在 设置 → 插件 → 本 bundle → 自动加载 中可关闭。',
       compatHeading: '兼容性',
       usageHeading: '使用方式',
+      usage: '新会话已自带协议；也可以在输入框输入 /self-organizing-agent-team 重新加载一份。要关闭默认加载，请改插件配置里的 autoLoad。',
     }
 
     const heading = (text) => h('div', {
@@ -90,6 +95,7 @@ window.__ModuleLoader__.load({
         row(t('fieldCore'), COMPAT.coreRepo + ' @ ' + COMPAT.coreRef),
         row(t('fieldBundle'), COMPAT.bundleVersion),
         row(t('fieldDsh'), 'DSH ' + COMPAT.dshVersionChecked),
+        row(t('fieldAutoLoad'), t('autoLoadOn')),
         heading(t('usageHeading')),
         h('div', {
           style: {

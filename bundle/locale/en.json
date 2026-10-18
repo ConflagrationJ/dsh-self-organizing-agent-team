@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Self-Organizing Agent Team",
-    "description": "Registers the governed multi-agent delivery skill and adds a read-only compatibility page to Settings."
+    "description": "Registers the governed multi-agent delivery skill, loads it by default in new sessions (toggleable), and adds a read-only compatibility page to Settings."
   }
 }

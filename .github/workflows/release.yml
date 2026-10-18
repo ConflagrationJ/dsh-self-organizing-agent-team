@@ -77,5 +77,6 @@ jobs:
             --title "DSH v${{ inputs.version }}" \
             --notes-file dist/RELEASE-NOTES.md \
             dist/dsh-self-organizing-agent-team-bundle-*.zip \
+            dist/conflagrationj-dsh-self-organizing-agent-team-*.tgz \
             dist/self-organizing-agent-team-skill-*.zip \
             dist/SHA256SUMS

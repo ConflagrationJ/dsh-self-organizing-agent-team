@@ -5,6 +5,7 @@ A DeepSeek Harness Cordis bundle for the **self-organizing-agent-team** protocol
 ## What it does
 
 - **Host half** (`index.js`): reads `skill/SKILL.md` from the package, validates its frontmatter, and registers it with `ctx.skills.register`, so the session catalog and the `skill` tool serve it from the package itself. The loaded body gets `resourceBase: { kind: 'directory', path: '<package>/skill' }`, so references, templates, and scripts resolve inside the bundle.
+- **Default auto-load**: unless the `autoLoad` plugin configuration is `false`, every newly created agent gets an agent-scoped system-prompt section containing the skill instructions, so new sessions carry the protocol without a manual `/` invocation. Teammates and subagents are agents too and receive the same section.
 - **Client half** (`client.js`): adds a read-only **Settings → Team Protocol** page (slot `settings.section`, id `self-organizing-team`) with localized copy and the compatibility pins.
 
 No DSH profile is modified by this package at install time beyond the bundle row that Plugin Manager creates.
@@ -23,19 +24,21 @@ No DSH profile is modified by this package at install time beyond the bundle row
 
 ## Install
 
-From a repository checkout:
+Install the release's `conflagrationj-dsh-self-organizing-agent-team-<version>.tgz` with DSH Plugin Manager. The tarball is required because the package depends on `@deepseek-ai/schemastery`; pnpm installs that dependency from the registry. Installing the folder directly links the checkout and cannot resolve the dependency.
 
-```sh
-python scripts/build.py     # in the repository root; assembles bundle/skill/
-```
-
-Then install this `bundle/` directory with DSH Plugin Manager (Settings → Plugins → add bundle from a folder), or extract a release asset and install the extracted folder.
+For a local build: `python scripts/build.py` in the repository root, then `npm pack` this directory and install the resulting `.tgz`.
 
 Verification:
 
 1. The session catalog lists `self-organizing-agent-team`.
-2. `/self-organizing-agent-team` in the composer loads the instructions.
+2. A newly created agent's context contains `<skill_content name="self-organizing-agent-team">` (auto-load; `autoLoad = false` disables it).
 3. Settings gains **Team Protocol** with the compatibility table.
+
+## Configuration
+
+| Field | Default | Meaning |
+|---|---|---|
+| `autoLoad` | `true` | Add the protocol instructions to every new agent's system prompt. Change it in the plugin configuration; it applies to agents created afterwards. |
 
 ## Limits
 

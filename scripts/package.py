@@ -7,9 +7,12 @@ Run `python scripts/build.py` first so `bundle/skill/` exists. Output goes to
 
 from __future__ import annotations
 
+import gzip
 import hashlib
+import io
 import json
 import sys
+import tarfile
 import zipfile
 from pathlib import Path
 
@@ -50,6 +53,39 @@ def add_tree(archive: zipfile.ZipFile, base: Path, prefix: str) -> int:
     return count
 
 
+def add_tar(tar: tarfile.TarFile, base: Path, prefix: str) -> int:
+    """Add a tree in sorted POSIX order with fixed metadata (npm-style `package/`)."""
+    count = 0
+    paths = sorted(base.rglob("*"), key=lambda item: item.relative_to(base).as_posix())
+    for path in paths:
+        rel = path.relative_to(base).as_posix()
+        if any(part in SKIP_DIRS for part in Path(rel).parts):
+            continue
+        if path.is_symlink() or not path.is_file():
+            continue
+        data = path.read_bytes()
+        info = tarfile.TarInfo(f"{prefix}/{rel}")
+        info.size = len(data)
+        info.mtime = 0
+        info.mode = 0o644
+        info.uid = 0
+        info.gid = 0
+        info.uname = ""
+        info.gname = ""
+        tar.addfile(info, io.BytesIO(data))
+        count += 1
+    return count
+
+
+def write_tgz(target: Path, base: Path, prefix: str) -> int:
+    """Write a gzipped npm-style tarball with a fixed gzip mtime."""
+    raw = io.BytesIO()
+    with tarfile.open(fileobj=raw, mode="w", format=tarfile.PAX_FORMAT) as tar:
+        count = add_tar(tar, base, prefix)
+    target.write_bytes(gzip.compress(raw.getvalue(), compresslevel=9, mtime=0))
+    return count
+
+
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -69,15 +105,20 @@ def main() -> int:
     with zipfile.ZipFile(bundle_zip, "w") as archive:
         bundle_files = add_tree(archive, BUNDLE, "dsh-self-organizing-agent-team")
 
+    bundle_tgz = DIST / f"conflagrationj-dsh-self-organizing-agent-team-{version}.tgz"
+    tgz_files = write_tgz(bundle_tgz, BUNDLE, "package")
+
     skill_zip = DIST / f"self-organizing-agent-team-skill-{version}.zip"
     with zipfile.ZipFile(skill_zip, "w") as archive:
         skill_files = add_tree(archive, SKILL, "self-organizing-agent-team")
 
     sums = DIST / "SHA256SUMS"
-    lines = [f"{sha256(path)}  {path.name}" for path in sorted(DIST.glob("*.zip"))]
+    assets = sorted(list(DIST.glob("*.zip")) + list(DIST.glob("*.tgz")))
+    lines = [f"{sha256(path)}  {path.name}" for path in assets]
     sums.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
     print(f"bundle asset: {bundle_zip.name} ({bundle_files} files, {bundle_zip.stat().st_size} bytes)")
+    print(f"install asset: {bundle_tgz.name} ({tgz_files} files, {bundle_tgz.stat().st_size} bytes)")
     print(f"skill asset:  {skill_zip.name} ({skill_files} files, {skill_zip.stat().st_size} bytes)")
     print(f"checksums:    {sums.name}")
     return 0

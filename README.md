@@ -9,7 +9,7 @@ The protocol itself — risk routing, ownership, write scopes, review gates, rev
 
 | Field | Value |
 |---|---|
-| Bundle | `@conflagrationj/dsh-self-organizing-agent-team` `0.1.0` |
+| Bundle | `@conflagrationj/dsh-self-organizing-agent-team` `0.2.0` |
 | Adapter | `dsh-agent-team-v1` |
 | Core skill | `ConflagrationJ/self-organizing-agent-team` @ `v0.1.0` |
 | Verified against | DSH Desktop `44.7.0`, profile `desktop` |
@@ -29,11 +29,19 @@ evidence/              Verification records shipped with the release
 
 `bundle/skill/` and `dist/` are generated (`python scripts/build.py`, `python scripts/package.py`) and are not committed.
 
-## Install (primary: bundle)
+## Install (primary: tarball bundle)
 
-1. `python scripts/build.py`
-2. In DSH, install the `bundle/` folder as a bundle (Settings → Plugins), or extract a release asset and install the extracted folder.
-3. Refresh the page if the UI does not pick it up. The session catalog lists `self-organizing-agent-team`, and Settings gains **Team Protocol**.
+The release ships an npm-style `.tgz` because the bundle depends on `@deepseek-ai/schemastery` for its plugin configuration; Plugin Manager installs that dependency from the registry when given the tarball.
+
+1. Download `conflagrationj-dsh-self-organizing-agent-team-<version>.tgz` from the release.
+2. Install that tarball as a bundle with DSH Plugin Manager.
+3. Refresh the page if needed. The session catalog lists `self-organizing-agent-team`, Settings gains **Team Protocol**, and new sessions receive the protocol automatically.
+
+For local development from this checkout: `python scripts/build.py`, then `npm pack` the `bundle/` directory and install the resulting tarball. Installing the `bundle/` folder directly links the checkout, in which case its `@deepseek-ai/schemastery` dependency cannot be resolved from the profile.
+
+## Default auto-load
+
+`autoLoad` (Host plugin configuration, default `true`) makes every newly created agent inherit an agent-scoped system-prompt section containing the skill instructions, including teammates and subagents. Turn it off in the plugin's configuration (Settings → Plugins → this bundle) to fall back to explicit invocation only; the change applies to agents created after the configuration is applied. Keep the catalog entry: even with auto-load off, `/self-organizing-agent-team` and the `skill` tool still work.
 
 ## Install (fallback: filesystem skill)
 
@@ -75,7 +83,7 @@ Core upgrades: take the new core tag, copy the files named by `core_scope`, re-a
 
 ## Release
 
-`.github/workflows/release.yml` is manual (`workflow_dispatch`) with a `dry_run` input that defaults to `true`. It validates the repo, assembles and tests the bundle, checks JavaScript syntax, packages the assets, renders release notes, verifies `SHA256SUMS`, and publishes `dsh-v<version>` with the bundle asset, the skill fallback asset, and the checksums. The job runs in the `release` environment so repository protection rules can require a reviewer before publishing.
+`.github/workflows/release.yml` is manual (`workflow_dispatch`) with a `dry_run` input that defaults to `true`. It validates the repo, assembles and tests the bundle, checks JavaScript syntax, packages the assets (installable tarball, inspection zip, skill fallback), renders release notes, verifies `SHA256SUMS`, and publishes `dsh-v<version>`. The job runs in the protected `release` environment, which is configured to require a reviewer (the repository owner) before any deployment, so a token alone cannot publish.
 
 ## Boundaries
 

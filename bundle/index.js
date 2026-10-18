@@ -1,24 +1,32 @@
 /**
- * Host half of the bundle: register the packaged protocol skill.
+ * Host half of the bundle: register the packaged protocol skill and, unless
+ * disabled in the plugin configuration, load its instructions into every new
+ * agent by default.
  *
- * The skill lives in `skill/` beside this module, so the bundle is
- * self-contained: the catalog entry, the loaded body, and the resource base
- * directory all come from the package, and no copy under `~/.dsh/skills` is
- * required.
+ * Auto-load adds one agent-scoped system-prompt section per agent. It is a
+ * profile-level default: the toggle is `autoLoad` in this plugin's Config, and
+ * it takes effect for agents created after the configuration is applied.
  */
 
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import z from '@deepseek-ai/schemastery'
 
 const packageDir = dirname(fileURLToPath(import.meta.url))
 const skillDir = join(packageDir, 'skill')
 const skillFile = join(skillDir, 'SKILL.md')
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
+const SECTION_NAME = 'self-organizing-agent-team'
 
 /** Services this plugin needs before it can activate. */
-export const inject = ['skills']
+export const inject = ['skills', 'systemPrompt']
+
+/** Plugin configuration shown by Plugin Manager. */
+export const Config = z.object({
+  autoLoad: z.boolean().default(true),
+})
 
 /** Parse the small YAML subset used by skill frontmatter. */
 function parseFrontmatter(text) {
@@ -33,14 +41,31 @@ function parseFrontmatter(text) {
   return { fields, body: text.slice(match[0].length) }
 }
 
-/** Register the protocol skill once per Host composition. */
-export function apply(ctx) {
+/** Render the same envelope the `skill` tool returns. */
+function renderSkillContent(name, body) {
+  return [
+    `<skill_content name="${name}">`,
+    '<skill_resources>',
+    `Base directory for this skill: ${skillDir}`,
+    'Resolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.',
+    '</skill_resources>',
+    '',
+    '<skill_instructions>',
+    body.trim(),
+    '</skill_instructions>',
+    '</skill_content>',
+  ].join('\n')
+}
+
+/** Register the protocol skill, then optionally load it into new agents. */
+export function apply(ctx, config = {}) {
   const text = readFileSync(skillFile, 'utf8')
   const { fields, body } = parseFrontmatter(text)
   const { name, description, whenToUse } = fields
   if (!name || !description) {
     throw new Error(`self-organizing-agent-team: ${skillFile} needs name and description`)
   }
+
   ctx.effect(
     () => ctx.skills.register({
       name,
@@ -49,9 +74,29 @@ export function apply(ctx) {
       content: body,
       path: skillFile,
       resourceBase: { kind: 'directory', path: skillDir },
-      source: 'bundled',
+      source: 'runtime',
       invocation: { modelInvocable: true, userInvocable: true },
     }),
     'self-organizing-agent-team: skill',
   )
+
+  if (config.autoLoad === false) return
+
+  const sectionText = [
+    'This session has the self-organizing-agent-team skill loaded by default.',
+    'Do not call the `skill` tool for it again in this session; treat the instructions below as already loaded.',
+    '',
+    renderSkillContent(name, body),
+  ].join('\n')
+
+  ctx.on('agent/created', ({ agent }) => {
+    agent.ctx.effect(
+      () => agent.ctx.systemPrompt.section({
+        name: SECTION_NAME,
+        order: 500,
+        text: sectionText,
+      }),
+      'self-organizing-agent-team: auto-load prompt section',
+    )
+  })
 }

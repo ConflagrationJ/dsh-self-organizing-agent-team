@@ -7,11 +7,19 @@
 
 协议正文（风险分级、归属、写入范围、评审门禁、revision 绑定证据、外部动作授权）在 [`skill/`](skill/) 里；宿主无关，DSH 差异集中在 `skill/adapters/deepseek-harness/`。
 
-## 安装（主路径：bundle）
+## 安装（主路径：tarball bundle）
 
-1. `python scripts/build.py`
-2. 在 DSH 设置 → 插件里把 `bundle/` 目录作为 bundle 安装；或解压 Release 里的 bundle 压缩包后安装解压目录。
-3. 如 UI 未刷新则刷新页面。会话技能目录会出现 `self-organizing-agent-team`，设置里出现 **团队协议** 页面。
+Release 提供 npm 风格的 `.tgz`：bundle 依赖 `@deepseek-ai/schemastery` 来提供插件配置，用 Plugin Manager 安装 tarball 时 pnpm 会从 registry 安装该依赖。
+
+1. 下载 `conflagrationj-dsh-self-organizing-agent-team-<version>.tgz`
+2. 在 DSH Plugin Manager 里把该 tarball 作为 bundle 安装
+3. 需要时刷新页面。会话技能目录出现 `self-organizing-agent-team`，设置出现 **团队协议** 页，新会话自动带协议
+
+直接安装 `bundle/` 目录会以 link 方式指向工作区，依赖无法从 profile 解析；本地开发请先 `python scripts/build.py`，再 `npm pack bundle/` 安装生成的 tarball。
+
+## 默认自动加载
+
+`autoLoad`（Host 插件配置，默认 `true`）会给每个新创建的 agent 增加一个 agent 级 system-prompt section，内容就是技能说明；teammate 和 subagent 也算新 agent，同样会带上。要回到“仅显式调用”，在插件配置里关掉 `autoLoad`，对之后创建的 agent 生效。关掉后 `/self-organizing-agent-team` 和 `skill` 工具仍然可用。
 
 ## 安装（fallback：技能目录）
 
@@ -42,7 +50,7 @@ python scripts/test_forward_scenarios.py
 
 ## 发布
 
-`.github/workflows/release.yml` 手动触发，`dry_run` 默认 `true`；在 `release` environment 中运行，可用仓库保护规则要求发布前人工审批。发布 `dsh-v<version>`，附带 bundle 包、技能 fallback 包和 `SHA256SUMS`。
+`.github/workflows/release.yml` 手动触发，`dry_run` 默认 `true`；在受保护的 `release` environment 中运行，已配置要求仓库 owner 审批，token 本身不能直接发布。发布 `dsh-v<version>`，附带可安装 tarball、检查用 bundle zip、技能 fallback 包和 `SHA256SUMS`。
 
 ## 边界
 
