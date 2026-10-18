@@ -1,3 +1,5 @@
+[English](README.md) | 中文
+
 # dsh-self-organizing-agent-team
 
 `self-organizing-agent-team` 协议的 DeepSeek Harness 原生发行版：一个 Cordis bundle，

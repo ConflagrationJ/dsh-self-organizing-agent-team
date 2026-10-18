@@ -1,3 +1,5 @@
+English | [中文](TEAM-PROTOCOL.zh-CN.md)
+
 # DSH Team Protocol
 
 This is the Lead-facing protocol for DeepSeek Harness (DSH) Agent Teams. It adapts the skill's governed team model to DSH's real tools and limits.

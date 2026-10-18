@@ -9,10 +9,10 @@
     "scripts/validate_task_contract.py"
   ],
   "core_snapshot": "worktree-snapshot:956eb0528a96e6b370bc7558d780d6a29ed8b586537633f11f47699ef90656ac",
-  "dsh_skill_snapshot": "worktree-snapshot:ef7d200a402b1e142db35ee46f89c8ff19acfdee553c93b87c79a3d63b64e1e9",
+  "dsh_skill_snapshot": "worktree-snapshot:3f320e7c1493ec65db98ccf8bb6f19203ca7d40b43d3ea85859a496682407030",
   "dsh_version_checked": "44.7.0",
   "dsh_profile": "desktop",
   "bundle": "@conflagrationj/dsh-self-organizing-agent-team",
-  "bundle_version": "0.2.1",
+  "bundle_version": "0.2.2",
   "skill": "self-organizing-agent-team"
 }

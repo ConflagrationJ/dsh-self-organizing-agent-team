@@ -1,3 +1,5 @@
+English | [中文](README.zh-CN.md)
+
 # @conflagrationj/dsh-self-organizing-agent-team
 
 A DeepSeek Harness Cordis bundle for the **self-organizing-agent-team** protocol.

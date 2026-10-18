@@ -14,7 +14,7 @@ window.__ModuleLoader__.load({
     const React = require('react')
     const h = React.createElement
 
-    const COMPAT = JSON.parse('{"adapter":"dsh-agent-team-v1","coreRepo":"ConflagrationJ/self-organizing-agent-team","coreRef":"v0.1.0","bundleVersion":"0.2.1","dshVersionChecked":"44.7.0","skillName":"self-organizing-agent-team"}')
+    const COMPAT = JSON.parse('{"adapter":"dsh-agent-team-v1","coreRepo":"ConflagrationJ/self-organizing-agent-team","coreRef":"v0.1.0","bundleVersion":"0.2.2","dshVersionChecked":"44.7.0","skillName":"self-organizing-agent-team"}')
 
     const NS = 'self-organizing-agent-team'
     const ROW_KEYS = [

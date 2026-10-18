@@ -1,3 +1,5 @@
+English | [中文](README.zh-CN.md)
+
 # DeepSeek Harness Adapter
 
 This directory maps the skill onto DeepSeek Harness (DSH) Agent Teams. It is documentation only: it contains no plugin code and changes no profile state. It is unofficial and experimental; DSH tool schemas, limits, and profile composition can change between releases.

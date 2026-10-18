@@ -1,3 +1,5 @@
+English | [中文](README.zh-CN.md)
+
 # dsh-self-organizing-agent-team
 
 DeepSeek Harness distribution of the **self-organizing-agent-team** protocol, packaged the DSH-native way: a Cordis bundle that
@@ -9,7 +11,7 @@ The protocol itself — risk routing, ownership, write scopes, review gates, rev
 
 | Field | Value |
 |---|---|
-| Bundle | `@conflagrationj/dsh-self-organizing-agent-team` `0.2.1` |
+| Bundle | `@conflagrationj/dsh-self-organizing-agent-team` `0.2.2` |
 | Adapter | `dsh-agent-team-v1` |
 | Core skill | `ConflagrationJ/self-organizing-agent-team` @ `v0.1.0` |
 | Verified against | DSH Desktop `44.7.0`, profile `desktop` |
