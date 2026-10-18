@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "adapter": "dsh-agent-team-v1",
+  "core_repo": "ConflagrationJ/self-organizing-agent-team",
+  "core_ref": "v0.1.0",
+  "core_scope": [
+    "references/",
+    "templates/",
+    "scripts/validate_task_contract.py"
+  ],
+  "core_snapshot": "worktree-snapshot:956eb0528a96e6b370bc7558d780d6a29ed8b586537633f11f47699ef90656ac",
+  "dsh_skill_snapshot": "worktree-snapshot:e5cb4ec511b5196a0cad282f9f7605eedd3d1a86ab179d2d2add572deed6c1b4",
+  "dsh_version_checked": "44.7.0",
+  "dsh_profile": "desktop",
+  "bundle": "@conflagrationj/dsh-self-organizing-agent-team",
+  "bundle_version": "0.1.0",
+  "skill": "self-organizing-agent-team"
+}

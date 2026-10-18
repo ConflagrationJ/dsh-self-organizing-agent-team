@@ -1,0 +1,15 @@
+# Generated at build time
+bundle/skill/
+bundle/compat.json
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.sot-tmp/
+
+# OS / editor
+.DS_Store
+Thumbs.db

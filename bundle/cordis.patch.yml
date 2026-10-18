@@ -1,0 +1,5 @@
+# Insert the Host row that registers the bundled protocol skill. The package's
+# `dsh.client` section loads the read-only Settings page separately.
+- insert:
+    - id: self-organizing-agent-team
+      name: '@conflagrationj/dsh-self-organizing-agent-team'

@@ -1,0 +1,81 @@
+name: release-dsh-bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Bundle version, e.g. 0.1.0'
+        required: true
+      core_ref:
+        description: 'Pinned core tag, e.g. v0.1.0'
+        required: true
+      dry_run:
+        description: 'Validate and package without creating a release'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-dsh-bundle
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate manifest and compat pins
+        run: python scripts/validate_repo.py --core-ref "${{ inputs.core_ref }}"
+
+      - name: Assemble bundle
+        run: python scripts/build.py
+
+      - name: Run skill checks
+        working-directory: bundle/skill
+        run: |
+          python scripts/validate_task_contract.py templates/task-contract.md
+          python scripts/test_validate_task_contract.py
+          python scripts/test_forward_scenarios.py
+
+      - name: Check bundle JavaScript syntax
+        run: |
+          node --check bundle/index.js
+          node --check bundle/client.js
+
+      - name: Package assets
+        run: python scripts/package.py
+
+      - name: Render release notes
+        run: python scripts/release_notes.py --version "${{ inputs.version }}" --core-ref "${{ inputs.core_ref }}" --output dist/RELEASE-NOTES.md
+
+      - name: Verify checksums
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS
+
+      - name: Publish release
+        if: ${{ inputs.dry_run == false }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "dsh-v${{ inputs.version }}" \
+            --target "$GITHUB_SHA" \
+            --title "DSH v${{ inputs.version }}" \
+            --notes-file dist/RELEASE-NOTES.md \
+            dist/dsh-self-organizing-agent-team-bundle-*.zip \
+            dist/self-organizing-agent-team-skill-*.zip \
+            dist/SHA256SUMS
