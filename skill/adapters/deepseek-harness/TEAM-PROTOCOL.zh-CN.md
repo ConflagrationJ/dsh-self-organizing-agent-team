@@ -6,7 +6,7 @@
 
 它不是 DSH plugin，不是官方认证，也不承诺 schema 稳定。在完整仓库中工作时，请阅读主 skill 的 `references/` 文件。DSH 自身的 Team 策略、审批流程和 sandbox 始终具有最高权威；本协议只增加风险路由与门禁。
 
-检查依据：DSH Desktop 44.7.0，profile `desktop`，日期 2026-10-18。
+检查依据：DSH Desktop 44.7.0，profile `desktop`，日期 2026-10-18。第 2、7 节的投递语义已在同一构建上用 nonce 往返探针复核（第 2 节第 5 步）。
 
 ## 1. 权限与角色
 
@@ -29,8 +29,9 @@
 
 1. 确认 composition：调用 `list_agents`；已挂载的 Team service 会返回 Lead 行。然后确认 `spawn_teammate`、`send_message`、`team_task_create`、`team_task_get`、`team_task_list`、`team_task_update`、`wait_agent` 以及（若已启用）`interrupt_agent`。
 2. 如果缺少 Team tool，不要模拟团队。改用仅 Lead 路径，记录探测输出，并说明未创建团队。
-3. 如果 Team tool 与 `subagent` / `subagent_fork` 同时可见，只使用 Team tool。`subagent` 子代理不是团队成员：它没有 `target`，不能拥有任务，也不能满足门禁。
+3. 如果 Team tool 与 `subagent` / `subagent_fork` 同时可见，只使用 Team tool。`subagent` 子代理不是团队成员：它没有 `target`，不能拥有任务，也不能满足门禁。在 DSH 44.7.0 上，即使启用了 Team profile，旧版控件也可能仍然可见，因此把“两套并存”当作常态，而不是配置错误。
 4. 在 `host_capabilities.adapter` 中把机制记录为 `dsh-agent-team-v1`，并把探测输出作为 `detection.evidence`。
+5. Team tool 存在不等于投递可用。宿主构建或版本不熟悉时，先用一次 nonce 往返探针：spawn 一个探针 teammate，prompt 里嵌入随机串，要求它把随机串写进 workspace 文件并原样回传，然后核对文件与回复。spawn 出来的名字永久占用且消耗名额，所以按宿主构建做一次，不要每个任务做。不要用 `list_agents` 当投递证据。
 
 ## 3. 风险路由与团队形态
 
@@ -110,7 +111,7 @@ DSH 给每个成员相同的 tool；没有只读模式。reviewer 只读是由 L
 
 ## 7. 消息、等待与中断
 
-- `send_message` 成功只表示收件箱已接收。DSH 不重试、不去重，也不确认处理。
+- `send_message` 成功只表示收件箱已接收。DSH 不重试、不去重，也不确认处理。静默窗口从 steer 被接受那一刻开始：之后没有回执确认已完成持久 flush，也没有回执确认某个 turn 消费了它。`spawn_teammate` 更强：初始 prompt 会在成员提交为 `active` 之前 flush 并核对子会话，核对失败抛 `TEAM_PROVISIONING_CONFLICT`，而不是留下一个静默的成员。投递真的重要时，用 nonce 往返确认（第 2 节第 5 步），不要用 `list_agents`。
 - 单条消息上限为 64 KiB。发送路径、哈希和简短摘录；把完整 diff 和日志放进 workspace 文件。
 - 任何成员都可以给任何其他成员发消息；向自己发消息会被拒绝。
 - `wait_agent` 等待下一次花名册、任务、消息接收或实时状态变化。它只报告变化或超时（10 秒到 1 小时）。当没有其他成员在运行或 provisioning 时，它会立即返回 `noProgress`；这意味着应发消息唤醒某人，而不是工作失败。
@@ -193,7 +194,9 @@ DSH 给每个成员相同的 tool；没有只读模式。reviewer 只读是由 L
 - 一个进程和一个共享工作目录。没有 worktree 隔离、合并步骤或文件锁。
 - `write_scopes` 只是警告。Bash、formatter、生成器和直接写入都可能绕过所有权；由 Lead 检查最终 diff。
 - 没有逐成员的只读权限。reviewer 只读是由快照比对支撑、由 Lead 强制执行的协议规则。
-- `send_message` 成功是收件箱已接收，不是已处理；没有重试或去重。
+- `send_message` 成功是收件箱已接收，不是已处理；steer 之后没有回执、没有重试、没有去重。
+- `spawn_teammate` 在提交 `active` 前会核对初始 prompt 与子会话；这是适配器唯一被强制执行的投递检查（确认接收，不确认处理）。
+- `@deepseek-ai/dsh-experimental-agent-team@0.2.1-rc.2` 随包带了 `lib/types/mailbox.js`（持久队列、delivered 确认、恢复重试），但 DSH 44.7.0 的 `TeamService` 没有 import 它；不要拿这个文件当作该构建的投递保证。
 - `inactive` 不是完成、失败或结束；任务所有者绝不会被自动释放。
 - `interrupt_agent` 只取消 turn，保留收件箱，且不释放所有权；它在不同 composition 中是可选的。
 - Team package 是实验性的，不承诺稳定性。

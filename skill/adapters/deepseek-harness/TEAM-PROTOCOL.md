@@ -6,7 +6,7 @@ This is the Lead-facing protocol for DeepSeek Harness (DSH) Agent Teams. It adap
 
 It is not a DSH plugin, not an official certification, and not a promise of stable schemas. Read the main skill's `references/` files when working from the full repository. DSH's own Team policy, approval flow, and sandbox remain authoritative; this protocol only adds risk routing and gates.
 
-Checked against DSH Desktop 44.7.0, profile `desktop`, on 2026-10-18.
+Checked against DSH Desktop 44.7.0, profile `desktop`, on 2026-10-18. The message-delivery claims in §2 and §7 were re-verified on that build with a nonce round-trip probe (§2 step 5).
 
 ## 1. Authority and roles
 
@@ -29,8 +29,9 @@ Checked against DSH Desktop 44.7.0, profile `desktop`, on 2026-10-18.
 
 1. Confirm the composition: call `list_agents`; a mounted Team service returns the Lead row. Then confirm `spawn_teammate`, `send_message`, `team_task_create`, `team_task_get`, `team_task_list`, `team_task_update`, `wait_agent`, and (if enabled) `interrupt_agent`.
 2. If the Team tools are missing, do not simulate a team. Use the Lead-only path, record the probe output, and state that no team was created.
-3. If both Team tools and `subagent` / `subagent_fork` are visible, use only the Team tools. A `subagent` child is not a team member: it has no `target`, cannot own a task, and cannot satisfy a gate.
+3. If both Team tools and `subagent` / `subagent_fork` are visible, use only the Team tools. A `subagent` child is not a team member: it has no `target`, cannot own a task, and cannot satisfy a gate. On DSH 44.7.0 the legacy controls can stay visible even when the Team profile is enabled, so treat coexistence as the normal case, not as a misconfiguration.
 4. Record the mechanism in `host_capabilities.adapter` as `dsh-agent-team-v1`, with the probe output as `detection.evidence`.
+5. Team tools being present does not prove delivery. When the host build or version is unfamiliar, run one nonce round-trip before relying on messages: spawn a probe teammate whose prompt embeds a random token, require it to write that token to a workspace file and echo it back, then verify both. Spawned names are permanent and consume capacity, so do this once per host build, not per task. `list_agents` alone is not delivery evidence.
 
 ## 3. Risk routing and team shape
 
@@ -110,7 +111,7 @@ Use at most two writer-reviewer rounds. On the second unresolved round, stop and
 
 ## 7. Messages, waiting, and interruption
 
-- `send_message` success means inbox acceptance only. DSH does not retry, deduplicate, or confirm processing.
+- `send_message` success means inbox acceptance only. DSH does not retry, deduplicate, or confirm processing. The silent window starts after the steer is accepted: no later receipt confirms a durable flush or that a model turn consumed it. `spawn_teammate` is stronger: the initial prompt is flushed and checked against the child session before the member is committed `active`, and a prompt-checkpoint failure raises `TEAM_PROVISIONING_CONFLICT` instead of creating a silent member. When delivery matters, confirm it with a nonce round-trip (§2 step 5), not with `list_agents`.
 - One message is capped at 64 KiB. Send paths, hashes, and short excerpts; put full diffs and logs in workspace files.
 - Any member may message any other member; self-messaging is rejected.
 - `wait_agent` waits for the next roster, task, message-acceptance, or live-status change. It reports only change or timeout (10 s to 1 h). It returns `noProgress` immediately when no other member is running or provisioning; that means wake someone with a message, not that work failed.
@@ -193,7 +194,9 @@ The contract's budget is policy; DSH has no per-agent timer.
 - One process and one shared working directory. No worktree isolation, merge step, or file lock.
 - `write_scopes` are warnings. Bash, formatters, generators, and direct writes can bypass ownership; the Lead inspects the final diff.
 - No per-member read-only permissions. Reviewer read-only is a Lead-enforced protocol rule backed by snapshot comparison.
-- `send_message` success is inbox acceptance, not processing; no retry or deduplication.
+- `send_message` success is inbox acceptance, not processing; no post-steer receipt, retry, or deduplication.
+- `spawn_teammate` checks the initial prompt against the child session before committing `active`; treat that as the only enforced delivery check (acceptance, not processing).
+- The `@deepseek-ai/dsh-experimental-agent-team@0.2.1-rc.2` package ships `lib/types/mailbox.js` (durable queue, delivered acknowledgement, recovery), but `TeamService` does not import it on DSH 44.7.0. Do not cite that file as this build's delivery guarantee.
 - `inactive` is not done, failed, or complete; task owners are never released automatically.
 - `interrupt_agent` cancels a turn only, keeps the inbox, and does not release ownership; it is optional across compositions.
 - Team packages are experimental and carry no stability promise.
