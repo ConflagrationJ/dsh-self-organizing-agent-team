@@ -34,7 +34,12 @@ def add_tree(archive: zipfile.ZipFile, base: Path, prefix: str) -> int:
         if path.is_symlink() or not path.is_file():
             continue
         info = zipfile.ZipInfo(f"{prefix}/{rel}", date_time=FIXED_TIME)
-        info.compress_type = zipfile.ZIP_DEFLATED
+        # Stored (not deflated): zlib output differs across Python builds, which
+        # would make the release assets and SHA256SUMS non-reproducible.
+        info.compress_type = zipfile.ZIP_STORED
+        # Pin the platform field too; Windows and Linux would otherwise write
+        # different create_system values into the local file header.
+        info.create_system = 3
         info.external_attr = 0o644 << 16
         archive.writestr(info, path.read_bytes())
         count += 1
