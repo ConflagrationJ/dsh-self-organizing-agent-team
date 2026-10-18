@@ -27,7 +27,11 @@ def fail(message: str) -> None:
 
 def add_tree(archive: zipfile.ZipFile, base: Path, prefix: str) -> int:
     count = 0
-    for path in sorted(base.rglob("*")):
+    # Sort by the POSIX relative path: Path ordering is case-insensitive on
+    # Windows and case-sensitive on Linux, which would change the entry order
+    # and therefore the archive bytes.
+    paths = sorted(base.rglob("*"), key=lambda item: item.relative_to(base).as_posix())
+    for path in paths:
         rel = path.relative_to(base).as_posix()
         if any(part in SKIP_DIRS for part in Path(rel).parts):
             continue
@@ -71,7 +75,7 @@ def main() -> int:
 
     sums = DIST / "SHA256SUMS"
     lines = [f"{sha256(path)}  {path.name}" for path in sorted(DIST.glob("*.zip"))]
-    sums.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    sums.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
     print(f"bundle asset: {bundle_zip.name} ({bundle_files} files, {bundle_zip.stat().st_size} bytes)")
     print(f"skill asset:  {skill_zip.name} ({skill_files} files, {skill_zip.stat().st_size} bytes)")

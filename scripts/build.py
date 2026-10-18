@@ -93,7 +93,9 @@ def main() -> int:
         if not (TARGET / rel).is_file():
             fail(f"missing required skill file: {rel}")
 
-    (BUNDLE / "compat.json").write_text(COMPAT.read_text(encoding="utf-8"), encoding="utf-8")
+    (BUNDLE / "compat.json").write_text(
+        COMPAT.read_text(encoding="utf-8"), encoding="utf-8", newline="\n"
+    )
 
     package = json.loads((BUNDLE / "package.json").read_text(encoding="utf-8"))
     if package.get("name") != compat.get("bundle"):

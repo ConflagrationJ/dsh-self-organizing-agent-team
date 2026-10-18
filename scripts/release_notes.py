@@ -68,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
 
     notes = "\n".join(lines).rstrip() + "\n"
     if args.output:
-        Path(args.output).write_text(notes, encoding="utf-8")
+        Path(args.output).write_text(notes, encoding="utf-8", newline="\n")
     else:
         sys.stdout.write(notes)
     return 0
