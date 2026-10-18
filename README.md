@@ -9,7 +9,7 @@ The protocol itself — risk routing, ownership, write scopes, review gates, rev
 
 | Field | Value |
 |---|---|
-| Bundle | `@conflagrationj/dsh-self-organizing-agent-team` `0.2.0` |
+| Bundle | `@conflagrationj/dsh-self-organizing-agent-team` `0.2.1` |
 | Adapter | `dsh-agent-team-v1` |
 | Core skill | `ConflagrationJ/self-organizing-agent-team` @ `v0.1.0` |
 | Verified against | DSH Desktop `44.7.0`, profile `desktop` |
@@ -41,7 +41,7 @@ For local development from this checkout: `python scripts/build.py`, then `npm p
 
 ## Default auto-load
 
-`autoLoad` (Host plugin configuration, default `true`) makes every newly created agent inherit an agent-scoped system-prompt section containing the skill instructions, including teammates and subagents. Turn it off in the plugin's configuration (Settings → Plugins → this bundle) to fall back to explicit invocation only; the change applies to agents created after the configuration is applied. Keep the catalog entry: even with auto-load off, `/self-organizing-agent-team` and the `skill` tool still work.
+`autoLoad` (Host plugin configuration, default `true`) makes every newly created agent inherit an agent-scoped system-prompt section containing the skill instructions, including teammates and subagents. Turn it off on the bundle row's **Configure** page (Plugins → this bundle → the row) to fall back to explicit invocation only; the change applies to agents created after the configuration is applied. Keep the catalog entry: even with auto-load off, `/self-organizing-agent-team` and the `skill` tool still work.
 
 ## Install (fallback: filesystem skill)
 

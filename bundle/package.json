@@ -1,7 +1,7 @@
 {
   "name": "@conflagrationj/dsh-self-organizing-agent-team",
-  "version": "0.2.0",
-  "description": "Agent Teams governance protocol for DeepSeek Harness: registers the self-organizing-agent-team skill, loads it by default (toggleable), and adds a read-only compatibility page to Settings.",
+  "version": "0.2.1",
+  "description": "Agent Teams governance protocol for DeepSeek Harness: registers the self-organizing-agent-team skill, loads it by default (toggleable on the bundle row's Configure page), and adds a read-only compatibility page to Settings.",
   "private": true,
   "type": "module",
   "license": "MIT",

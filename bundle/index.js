@@ -23,10 +23,22 @@ const SECTION_NAME = 'self-organizing-agent-team'
 /** Services this plugin needs before it can activate. */
 export const inject = ['skills', 'systemPrompt']
 
-/** Plugin configuration shown by Plugin Manager. */
+/**
+ * Plugin configuration. `volatile()` makes the field editable through the
+ * Settings form layer: only volatile fields are projected into editable forms
+ * and persisted into the profile patch.
+ */
 export const Config = z.object({
-  autoLoad: z.boolean().default(true),
+  autoLoad: z.boolean().default(true).volatile(),
 })
+
+/** Read the volatile `autoLoad` reference, defaulting to enabled. */
+function autoLoadEnabled(config) {
+  const value = config.autoLoad
+  if (value === undefined || value === null) return true
+  if (typeof value.get === 'function') return value.get() !== false
+  return value !== false
+}
 
 /** Parse the small YAML subset used by skill frontmatter. */
 function parseFrontmatter(text) {
@@ -80,8 +92,6 @@ export function apply(ctx, config = {}) {
     'self-organizing-agent-team: skill',
   )
 
-  if (config.autoLoad === false) return
-
   const sectionText = [
     'This session has the self-organizing-agent-team skill loaded by default.',
     'Do not call the `skill` tool for it again in this session; treat the instructions below as already loaded.',
@@ -90,6 +100,7 @@ export function apply(ctx, config = {}) {
   ].join('\n')
 
   ctx.on('agent/created', ({ agent }) => {
+    if (!autoLoadEnabled(config)) return
     agent.ctx.effect(
       () => agent.ctx.systemPrompt.section({
         name: SECTION_NAME,

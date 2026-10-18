@@ -38,7 +38,7 @@ Verification:
 
 | Field | Default | Meaning |
 |---|---|---|
-| `autoLoad` | `true` | Add the protocol instructions to every new agent's system prompt. Change it in the plugin configuration; it applies to agents created afterwards. |
+| `autoLoad` | `true` | Add the protocol instructions to every new agent's system prompt. Change it on the bundle row's **Configure** page (Plugins → this bundle → the row); it applies to agents created afterwards. |
 
 ## Limits
 

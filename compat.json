@@ -13,6 +13,6 @@
   "dsh_version_checked": "44.7.0",
   "dsh_profile": "desktop",
   "bundle": "@conflagrationj/dsh-self-organizing-agent-team",
-  "bundle_version": "0.2.0",
+  "bundle_version": "0.2.1",
   "skill": "self-organizing-agent-team"
 }
