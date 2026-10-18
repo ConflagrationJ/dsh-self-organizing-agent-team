@@ -1,0 +1,14 @@
+# Normalize line endings so the content hashes in compat.json are identical on
+# every platform: Linux CI, Windows maintainer checkouts, and release assets.
+* text=auto eol=lf
+
+*.py text
+*.js text
+*.json text
+*.md text
+*.yml text
+*.yaml text
+*.svg text
+*.txt text
+*.gitignore text
+LICENSE text
